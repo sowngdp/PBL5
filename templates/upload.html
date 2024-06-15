@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Image</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="upload.css">
+    <script>
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById('image-preview');
+                output.src = reader.result;
+                output.style.display = 'block';
+            }
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function uploadImage(event) {
+            event.preventDefault();
+            const form = document.getElementById('upload-form');
+            const formData = new FormData(form);
+
+            fetch('http://192.168.89.245:5000/upload_image', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                document.getElementById('result').innerText = data.result;
+                if (data.result !== "No license plate detected.") {
+                    document.getElementById('plate-image').src = `http://192.168.89.245:5000/plate_image?_=${new Date().getTime()}`;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</head>
+<body>
+<!-- NAVBAR -->
+<nav id="navbar">
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="upload.html">Upload</a></li>
+    </ul>
+</nav>
+<!-- CONTENT -->
+<div class="container">
+    <div class="upload-section">
+        <h2>Upload Image for Detection</h2>
+        <form id="upload-form" enctype="multipart/form-data" onsubmit="uploadImage(event)">
+            <input type="file" name="image" accept="image/*" required onchange="previewImage(event)">
+            <button type="submit" class="upload-btn">Upload</button>
+        </form>
+        <img id="image-preview" src="#" alt="Image Preview" style="display:none; margin-top:20px; max-width:100%;">
+        <p id="result"></p>
+    </div>
+</div>
+</body>
+</html>
